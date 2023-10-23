@@ -1,4 +1,4 @@
-module gallywix.elijahelrod.com
+module vespene.elijahelrod.com
 
 go 1.21.3
 
