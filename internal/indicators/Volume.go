@@ -1,7 +1,7 @@
 package indicators
 
 import (
-	helpers "gallywix.elijahelrod.com/internal/helpers"
+	"vespene.elijahelrod.com/internal/helpers"
 )
 
 type VolumeTrend struct {
