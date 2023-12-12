@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+
 	"github.com/sethvargo/go-envconfig"
 )
 
@@ -12,6 +13,7 @@ type Config struct {
 }
 
 type ExchangeConfig struct {
+	Wss              string   `env:"WSS,required"`
 	Url              string   `env:"URL,required"`
 	Origin           string   `env:"ORIGIN,required"`
 	Protocol         string   `env:"PROTOCOL,default="`

@@ -26,13 +26,16 @@ release.revert: ## Revert git release tag
 export LOGGER_CALLER=false
 export LOGGER_STACKTRACE=true
 export LOGGER_LEVEL=debug
+
 # database config
 export DB_HOST=localhost:3306
 export DB_USER=test_mysql
 export DB_PASSWORD=a2s_kjlasjd
 export DB_BASE=test
+
 # exchange config
-export EXCHANGE_URL=wss://ws-feed-public.sandbox.exchange.coinbase.com
+export EXCHANGE_WSS=wss://ws-feed-public.sandbox.exchange.coinbase.com
+export EXCHANGE_URL=https://api-public.sandbox.exchange.coinbase.com
 export EXCHANGE_ORIGIN=https://coinbase.com
 export EXCHANGE_PROTOCOL=
 export EXCHANGE_SYMBOLS=ETH-BTC,BTC-USD,BTC-EUR

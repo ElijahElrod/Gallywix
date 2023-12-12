@@ -2,6 +2,7 @@ package coinbase
 
 import (
 	"fmt"
+
 	ws "github.com/gorilla/websocket"
 )
 
@@ -18,7 +19,7 @@ type Subscribe struct {
 }
 
 type client struct {
-	*ws.Conn
+	conn *ws.Conn
 }
 
 func NewClient(url string) (*client, error) {
@@ -34,14 +35,15 @@ func NewClient(url string) (*client, error) {
 	return &client{conn}, nil
 }
 
-func (c *client) Write(msg []byte) (int, error) {
-	return c.Write(msg)
+func (c *client) WriteMsg(msg []byte) error {
+	return c.conn.WriteMessage(2, msg)
 }
 
-func (c *client) Read() ([]byte, error) {
-	return c.Read()
+func (c *client) ReadMsg() ([]byte, error) {
+	_, msg, err := c.conn.ReadMessage()
+	return msg, err
 }
 
-func (c *client) Close() error {
-	return c.Close()
+func (c *client) CloseConnection() error {
+	return c.conn.Close()
 }

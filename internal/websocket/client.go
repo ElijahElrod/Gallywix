@@ -5,16 +5,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/elijahelrod/vespene/config"
-	"github.com/elijahelrod/vespene/pkg/exchange"
-	"github.com/elijahelrod/vespene/pkg/exchange/coinbase"
-	"github.com/elijahelrod/vespene/pkg/logger"
-	"github.com/elijahelrod/vespene/pkg/models"
-	"golang.org/x/sync/errgroup"
 	"net"
 	"strings"
 	"sync"
 	"time"
+
+	"golang.org/x/sync/errgroup"
+
+	"github.com/elijahelrod/vespene/config"
+	"github.com/elijahelrod/vespene/pkg/exchange"
+	"github.com/elijahelrod/vespene/pkg/exchange/coinbase"
+	"github.com/elijahelrod/vespene/pkg/logger"
+	"github.com/elijahelrod/vespene/pkg/model"
 )
 
 type client struct {
@@ -39,10 +41,10 @@ func NewClient(conn exchange.Manager, logger logger.Logger, exchangeCfg config.E
 
 func (c *client) Run(ctx context.Context) error {
 	var errGroup = errgroup.Group{}
-	var tickMap = make(map[string]chan models.Tick)
+	var tickMap = make(map[string]chan model.Tick, len(c.products))
 
 	for _, symbol := range c.products {
-		tickMap[symbol] = make(chan models.Tick)
+		tickMap[symbol] = make(chan model.Tick)
 		errGroup.Go(func() error {
 			for {
 				select {
@@ -64,12 +66,12 @@ func (c *client) Run(ctx context.Context) error {
 		"product_ids": c.products,
 		"channels":    c.channels,
 	})
-	_, err := c.conn.Write(subscribeMsg)
+	err := c.conn.WriteMsg(subscribeMsg)
 	if err != nil {
 		return err
 	}
 
-	message, err := c.conn.Read()
+	message, err := c.conn.ReadMsg()
 	if err != nil {
 		c.logger.Error(err)
 		return err
@@ -101,24 +103,23 @@ func (c *client) Run(ctx context.Context) error {
 }
 
 // responseReader write to symbol channel from response socket data
-func (c *client) responseReader(symbol string, tickMap map[string]chan models.Tick) error {
+func (c *client) responseReader(symbol string, tickMap map[string]chan model.Tick) error {
 
-	var mu = sync.Mutex{}
+	var mu sync.Mutex
 	var tickData *coinbase.Response
 
 	for {
-		message, err := c.conn.Read()
+		message, err := c.conn.ReadMsg()
 		if err != nil {
+			c.logger.Error(err)
 			if errors.Is(err, net.ErrClosed) {
 				break
 			}
-			c.logger.Error(err)
 			continue
 		}
 
 		tickData, err = coinbase.ParseResponse(message)
 		if err != nil {
-			fmt.Println(string(message))
 			c.logger.Error(err)
 			continue
 		}
@@ -130,7 +131,7 @@ func (c *client) responseReader(symbol string, tickMap map[string]chan models.Ti
 			continue
 		case coinbase.Ticker:
 			mu.Lock()
-			tickMap[symbol] <- models.Tick{
+			tickMap[symbol] <- model.Tick{
 				Timestamp: time.Now().UnixNano(), // for exclude collision and accuracy time of ticker
 				Bid:       tickData.BestBid,
 				Ask:       tickData.BestAsk,

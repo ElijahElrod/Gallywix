@@ -1,4 +1,4 @@
-package models
+package model
 
 type Tick struct {
 	Timestamp int64

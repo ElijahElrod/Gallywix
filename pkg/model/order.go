@@ -1,4 +1,4 @@
-package models
+package model
 
 type OrderBody struct {
 	ProductId string `json:"product_id"`

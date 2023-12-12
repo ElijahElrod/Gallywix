@@ -2,10 +2,11 @@ package zap
 
 import (
 	"errors"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"os"
 	"syscall"
+
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 type client struct {
@@ -35,12 +36,13 @@ func (l *client) InitLogger() {
 
 	encoderCfg := zap.NewProductionEncoderConfig()
 	encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
+	encoderCfg.EncodeLevel = zapcore.CapitalColorLevelEncoder
 
 	// write syncers
 	stderrSyncer := zapcore.Lock(os.Stderr)
 
 	l.logger = zap.New(
-		zapcore.NewCore(zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig()),
+		zapcore.NewCore(zapcore.NewJSONEncoder(encoderCfg),
 			stderrSyncer,
 			zap.NewAtomicLevelAt(logLevel)),
 		zap.AddCaller(),
