@@ -12,11 +12,14 @@ type Config struct {
 }
 
 type ExchangeConfig struct {
-	Url      string   `env:"URL,required"`
-	Origin   string   `env:"ORIGIN,required"`
-	Protocol string   `env:"PROTOCOL,default="`
-	Symbols  []string `env:"SYMBOLS,required"`
-	Channels []string `env:"CHANNELS,required"`
+	Url              string   `env:"URL,required"`
+	Origin           string   `env:"ORIGIN,required"`
+	Protocol         string   `env:"PROTOCOL,default="`
+	Symbols          []string `env:"SYMBOLS,required"`
+	Channels         []string `env:"CHANNELS,required"`
+	AccessKey        string   `env:"ACCESS_KEY,required"`
+	AccessPassphrase string   `env:"ACCESS_PASSPHRASE,required"`
+	AccessSecret     string   `env:"ACCESS_SECRET,required"`
 }
 
 type DatabaseConfig struct {

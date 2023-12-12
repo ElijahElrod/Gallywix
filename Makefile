@@ -7,17 +7,8 @@ help: ## Show this help
 	@echo "Targets:"
 	@grep -h -E '^[a-zA-Z_-].+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
-compose.run: ## Start with docker-compose
-	docker-compose up --build
-
-compose.stop: ## Stop docker-compose
-	docker-compose down
-
 deps: ## Download dependencies
 	go mod download && go mod tidy
-
-lint: ## Check code (used golangci-lint)
-	GO111MODULE=on golangci-lint run
 
 test: ## Run tests
 	go clean --testcache
@@ -46,6 +37,9 @@ export EXCHANGE_ORIGIN=https://coinbase.com
 export EXCHANGE_PROTOCOL=
 export EXCHANGE_SYMBOLS=ETH-BTC,BTC-USD,BTC-EUR
 export EXCHANGE_CHANNELS=ticker
+export EXCHANGE_ACCESS_KEY=test
+export EXCHANGE_ACCESS_PASSPHRASE=test1
+export EXCHANGE_ACCESS_SECRET=secret
 
 run: ## Run application local
 	go run cmd/app/main.go
