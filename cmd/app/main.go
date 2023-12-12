@@ -2,12 +2,13 @@ package main
 
 import (
 	"context"
-	"github.com/elijahelrod/vespene/config"
-	"github.com/elijahelrod/vespene/internal/app"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/elijahelrod/vespene/config"
+	"github.com/elijahelrod/vespene/internal/app"
 )
 
 // Main runs the application
@@ -24,6 +25,5 @@ func main() {
 		log.Fatalf("Failed to init with config, %v", err)
 	}
 
-	log.Print("Starting Vespene")
 	app.Run(ctx, cfg)
 }

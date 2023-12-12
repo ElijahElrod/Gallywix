@@ -1,7 +1,9 @@
+// Package mysql implements utilities for interacting with a MySQL database configured in [DatabaseConfig]
 package mysql
 
 import (
 	"fmt"
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 )
@@ -10,6 +12,8 @@ type client struct {
 	*sqlx.DB
 }
 
+// NewClient creates a new MySQL Client for interacting with the databased configured by
+// [config.DatabaseConfig]
 func NewClient(host, username, password, base string) (*client, error) {
 	db, err := sqlx.Connect("mysql", fmt.Sprintf("%s:%s@(%s)/%s", username, password, host, base))
 	if err != nil {

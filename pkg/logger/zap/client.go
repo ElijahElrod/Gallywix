@@ -31,6 +31,7 @@ func NewLogger(level string, caller, stacktrace bool) *client {
 	return &client{level, caller, stacktrace, nil}
 }
 
+// InitLogger sets the logger with production configs, and color encoding for console logs
 func (l *client) InitLogger() {
 	logLevel := l.getLoggerLevel(l.level)
 
@@ -42,7 +43,7 @@ func (l *client) InitLogger() {
 	stderrSyncer := zapcore.Lock(os.Stderr)
 
 	l.logger = zap.New(
-		zapcore.NewCore(zapcore.NewJSONEncoder(encoderCfg),
+		zapcore.NewCore(zapcore.NewConsoleEncoder(encoderCfg),
 			stderrSyncer,
 			zap.NewAtomicLevelAt(logLevel)),
 		zap.AddCaller(),

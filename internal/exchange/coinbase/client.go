@@ -74,7 +74,7 @@ func (es *ExchangeService) PlaceOrder(productId, side, size, price string) {
 		return
 	}
 
-	// Required Coinbase Headers
+	// [Required Coinbase Headers]: https://docs.cloud.coinbase.com/exchange/docs/rest-auth
 	req.Header.Add("CB-ACCESS-KEY", accessKey)
 	req.Header.Add("CB-ACCESS-SIGN", signedAccessStr)
 	req.Header.Add("CB-ACCESS-TIMESTAMP", accessKey)

@@ -1,3 +1,4 @@
+// Package config holds the configuration objects for the crypto-exchange, storage database, and logger configuration
 package config
 
 import (
@@ -12,6 +13,7 @@ type Config struct {
 	Logger   LoggerConfig   `env:",prefix=LOGGER_"`
 }
 
+// ExchangeConfig holds the configuration & access details for exchange
 type ExchangeConfig struct {
 	Wss              string   `env:"WSS,required"`
 	Url              string   `env:"URL,required"`
@@ -24,6 +26,7 @@ type ExchangeConfig struct {
 	AccessSecret     string   `env:"ACCESS_SECRET,required"`
 }
 
+// DatabaseConfig holds the configuration & access details for the database
 type DatabaseConfig struct {
 	Host     string `env:"HOST,required"`
 	User     string `env:"USER,required"`
@@ -31,12 +34,14 @@ type DatabaseConfig struct {
 	Base     string `env:"BASE"`
 }
 
+// LoggerConfig holds the configuration & access details for the zap logger
 type LoggerConfig struct {
 	DisableCaller     bool   `env:"CALLER,default=false"`
 	DisableStacktrace bool   `env:"STACKTRACE,default=false"`
 	Level             string `env:"LEVEL,default=debug"`
 }
 
+// NewConfig creates a new configuration holding ExchangeConfig, DatabaseConfig, and LoggerConfig for Application Startup
 func NewConfig(ctx context.Context) (*Config, error) {
 	var cfg Config
 
