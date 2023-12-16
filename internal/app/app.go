@@ -5,6 +5,8 @@ import (
 	"os"
 
 	"github.com/elijahelrod/vespene/config"
+	"github.com/elijahelrod/vespene/internal/algo/signal/channel"
+	"github.com/elijahelrod/vespene/internal/algo/strategy"
 	"github.com/elijahelrod/vespene/internal/websocket"
 	"github.com/elijahelrod/vespene/pkg/exchange/coinbase"
 	"github.com/elijahelrod/vespene/pkg/logger/zap"
@@ -44,9 +46,11 @@ func Run(ctx context.Context, cfg *config.Config) {
 		loggerProvider.Fatal(err)
 	}
 
+	testStrategy := strategy.NewStrategy("Test", loggerProvider, channel.NewDonchian(2))
+
 	go func() {
 		loggerProvider.Info("socket starting...")
-		if err = socketProvider.Run(ctx); err != nil {
+		if err = socketProvider.Run(ctx, *testStrategy); err != nil {
 			loggerProvider.Fatal(err)
 			os.Exit(1)
 		}

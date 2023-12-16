@@ -34,7 +34,7 @@ func (es *ExchangeService) PlaceOrder(productId, side, size, price string) {
 	var accessSecret = es.exchangeCfg.AccessSecret
 	var timestamp = strconv.Itoa(int(time.Now().UnixNano()))
 
-	orderBody, err := json.Marshal(&model.OrderBody{
+	orderBody, err := json.Marshal(model.OrderBody{
 		ProductId: productId,
 		Side:      side,
 		Size:      size,
@@ -87,7 +87,12 @@ func (es *ExchangeService) PlaceOrder(productId, side, size, price string) {
 		return
 	}
 
-	defer res.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			es.logger.Error(err)
+		}
+	}(res.Body)
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
@@ -97,4 +102,27 @@ func (es *ExchangeService) PlaceOrder(productId, side, size, price string) {
 
 	// TODO: Add DB Write here or something for order tracking and cancelling later
 	es.logger.Info("Made request: " + string(body))
+}
+
+// CancelOrder sends a POST request to cancel one of more unfilled orders
+// it generates headers off the [config.ExchangeConfig]
+func (es *ExchangeService) CancelOrder() error {
+
+	var timestamp = strconv.Itoa(int(time.Now().UnixNano()))
+
+	orderBody, err := json.Marshal(model.OrderBody{
+		ProductId: "",
+		Side:      "",
+		Size:      "",
+		Price:     "",
+	})
+
+	if err != nil {
+		es.logger.Error(err)
+		return err
+	}
+
+	// Create pre-hashed string
+	_ = timestamp + Post + CancelOrderPath + string(orderBody[:])
+	return nil
 }

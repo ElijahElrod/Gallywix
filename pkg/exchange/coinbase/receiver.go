@@ -31,7 +31,7 @@ func (r ResponseType) String() string {
 	return responseTypes[r]
 }
 
-func (r *ResponseType) Unmarshal(v []byte) error {
+func (r *ResponseType) UnmarshalJSON(v []byte) error {
 	str := string(v)
 	for i, name := range responseTypes {
 		if name == str {
@@ -44,6 +44,7 @@ func (r *ResponseType) Unmarshal(v []byte) error {
 }
 
 func ParseResponse(message []byte) (response *Response, err error) {
+
 	err = json.Unmarshal(message, &response)
 	if err != nil {
 		return nil, err

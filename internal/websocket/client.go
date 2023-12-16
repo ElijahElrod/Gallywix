@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/elijahelrod/vespene/internal/algo/strategy"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/elijahelrod/vespene/config"
@@ -39,20 +40,21 @@ func NewClient(conn exchange.Manager, logger logger.Logger, exchangeCfg config.E
 	}, nil
 }
 
-func (c *client) Run(ctx context.Context) error {
+func (c *client) Run(ctx context.Context, strategy strategy.Strategy) error {
 	var errGroup = errgroup.Group{}
 	var tickMap = make(map[string]chan model.Tick, len(c.products))
 
 	for _, symbol := range c.products {
-		tickMap[symbol] = make(chan model.Tick)
+		tickMap[symbol] = make(chan model.Tick, 1)
 		errGroup.Go(func() error {
 			for {
 				select {
 				case <-ctx.Done():
 					return nil
-				case v, ok := <-tickMap[symbol]:
+				case tick, ok := <-tickMap[symbol]:
 					if ok {
-						c.logger.Info(fmt.Sprintf("Ticker Update: %s > time:%d, bid:%f, ask:%f", v.Symbol, v.Timestamp, v.Bid, v.Ask))
+						c.logger.Info(fmt.Sprintf("Tick %s -> time:%d, bid:%f, ask:%f", tick.Symbol, tick.Timestamp, tick.Bid, tick.Ask))
+						strategy.UpdateSignals(tick)
 					} else {
 						return nil
 					}
@@ -66,32 +68,39 @@ func (c *client) Run(ctx context.Context) error {
 		"product_ids": c.products,
 		"channels":    c.channels,
 	})
+
+	// Send webhook subscription message
 	err := c.conn.WriteMsg(subscribeMsg)
 	if err != nil {
+		c.logger.Error(err)
 		return err
 	}
 
+	// Check if we received response
 	message, err := c.conn.ReadMsg()
 	if err != nil {
 		c.logger.Error(err)
 		return err
 	}
+
 	result, err := coinbase.ParseResponse(message)
 	if err != nil {
 		c.logger.Error(err)
 		return err
 	}
+
 	switch result.Type {
 	case coinbase.Error:
 		c.logger.Fatal(fmt.Sprintf("%s:%s", result.Message, result.Reason))
+		return nil
 	case coinbase.Subscriptions:
-		c.logger.Info(fmt.Sprintf("started subscription on products [%s]", strings.Join(c.products, ",")))
+		c.logger.Info(fmt.Sprintf("Subscribed to products [%s]", strings.Join(c.products, ",")))
 	}
 
 	// writers
 	for _, symbol := range c.products {
 		errGroup.Go(func() error {
-			return c.responseReader(symbol, tickMap)
+			return c.responseReader(tickMap[symbol])
 		})
 	}
 
@@ -102,8 +111,8 @@ func (c *client) Run(ctx context.Context) error {
 	return nil
 }
 
-// responseReader write to symbol channel from response socket data
-func (c *client) responseReader(symbol string, tickMap map[string]chan model.Tick) error {
+// responseReader write to tickChan from response socket data
+func (c *client) responseReader(tickChan chan model.Tick) error {
 
 	var mu sync.Mutex
 	var tickData *coinbase.Response
@@ -115,6 +124,7 @@ func (c *client) responseReader(symbol string, tickMap map[string]chan model.Tic
 			if errors.Is(err, net.ErrClosed) {
 				break
 			}
+
 			continue
 		}
 
@@ -131,8 +141,8 @@ func (c *client) responseReader(symbol string, tickMap map[string]chan model.Tic
 			continue
 		case coinbase.Ticker:
 			mu.Lock()
-			tickMap[symbol] <- model.Tick{
-				Timestamp: time.Now().UnixNano(), // for exclude collision and accuracy time of ticker
+			tickChan <- model.Tick{
+				Timestamp: time.Now().UnixNano(),
 				Bid:       tickData.BestBid,
 				Ask:       tickData.BestAsk,
 				Symbol:    tickData.ProductID,
