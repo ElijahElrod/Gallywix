@@ -15,16 +15,16 @@ const (
 )
 
 type MovingAverage struct {
-	trend      signal.Trend // Overall direction
-	windowSize float64      // number of Ticks to track for trend and averages
-	average    float64
+	Trend      signal.Trend // Overall direction
+	WindowSize float64      // number of Ticks to track for trend and averages
+	Average    float64
 	Ticks      []float64 // Slice of windowSize model.Tick objects
 }
 
 func newMovingAverage(windowSize float64) *MovingAverage {
 	return &MovingAverage{
-		trend:      signal.Flat,
-		windowSize: windowSize,
+		Trend:      signal.Flat,
+		WindowSize: windowSize,
 		Ticks:      make([]float64, 0, int(windowSize)),
 	}
 }
@@ -42,7 +42,7 @@ func NewShortMovingAverage() *MovingAverage {
 }
 
 func (ma *MovingAverage) SignalActive() bool {
-	return len(ma.Ticks) == int(ma.windowSize)
+	return len(ma.Ticks) == int(ma.WindowSize)
 }
 
 func (ma *MovingAverage) Update(tick model.Tick) {
@@ -58,5 +58,5 @@ func (ma *MovingAverage) Update(tick model.Tick) {
 	for _, val := range ma.Ticks {
 		runSum += val
 	}
-	ma.average = runSum / ma.windowSize
+	ma.Average = runSum / ma.WindowSize
 }

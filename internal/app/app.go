@@ -45,11 +45,12 @@ func Run(ctx context.Context, cfg *config.Config) {
 	if err != nil {
 		loggerProvider.Fatal(err)
 	}
+	loggerProvider.Info("Initialized Socket Connection To Exchange: ", cfg.Exchange.Wss)
 
-	testStrategy := strategy.NewStrategy("Test", loggerProvider, trend.NewDonchian(2))
+	testStrategy := strategy.NewStrategy("Test", loggerProvider, trend.NewDonchian(5, 4))
 
 	go func() {
-		loggerProvider.Info("socket starting...")
+		loggerProvider.Info("Socket starting...")
 		if err = socketProvider.Run(ctx, *testStrategy); err != nil {
 			loggerProvider.Fatal(err)
 			os.Exit(1)
