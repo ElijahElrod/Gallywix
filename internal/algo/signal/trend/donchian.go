@@ -57,12 +57,14 @@ func (d *Donchian) Update(tick model.Tick) {
 
 func (d *Donchian) Evaluate(tick model.Tick) signal.Side {
 
-	if tick.Price > d.upper {
-		return signal.BUY
-	}
+	if d.SignalActive() {
+		if tick.Price > d.upper {
+			return signal.BUY
+		}
 
-	if tick.Price < d.lower {
-		return signal.SELL
+		if tick.Price < d.lower {
+			return signal.SELL
+		}
 	}
 
 	return signal.NONE
@@ -70,10 +72,7 @@ func (d *Donchian) Evaluate(tick model.Tick) signal.Side {
 
 func (d *Donchian) UpdateAndEvaluate(tick model.Tick) signal.Side {
 	d.Update(tick)
-	if d.SignalActive() {
-		return d.Evaluate(tick)
-	}
-	return signal.NONE
+	return d.Evaluate(tick)
 }
 
 func (d *Donchian) SignalActive() bool {
