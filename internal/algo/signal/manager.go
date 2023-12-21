@@ -11,6 +11,7 @@ type Signal interface {
 	Update(tick model.Tick)
 	SignalActive() bool
 	Details() string
+	Evaluate(tick model.Tick) Side
 }
 
 const (

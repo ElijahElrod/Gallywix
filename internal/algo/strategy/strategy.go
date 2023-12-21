@@ -59,3 +59,32 @@ func (s *Strategy) UpdateSignals(tick model.Tick) {
 		}
 	}
 }
+
+func (s *Strategy) EvaluateSignals(tick model.Tick) signal.Side {
+
+	buySignals := 0
+	sellSignals := 0
+
+	for _, sig := range s.signals {
+		if sig.SignalActive() {
+
+			switch sig.Evaluate(tick) {
+			case signal.SELL:
+				sellSignals += 1
+			case signal.BUY:
+				buySignals += 1
+			}
+
+		}
+	}
+
+	if buySignals > sellSignals {
+		return signal.BUY
+	}
+
+	if sellSignals > buySignals {
+		return signal.SELL
+	}
+
+	return signal.NONE
+}
