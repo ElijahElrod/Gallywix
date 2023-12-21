@@ -9,23 +9,23 @@ import (
 // Medium represents a 14-day window
 // Long represents a 21-day window
 const (
-	Short int = (iota + 1) * 7
+	Short float64 = (iota + 1) * 7
 	Medium
 	Long
 )
 
 type MovingAverage struct {
 	trend      signal.Trend // Overall direction
-	windowSize int          // number of Ticks to track for trend and averages
+	windowSize float64      // number of Ticks to track for trend and averages
 	average    float64
-	Ticks      []model.Tick // Slice of windowSize model.Tick objects
+	Ticks      []float64 // Slice of windowSize model.Tick objects
 }
 
-func newMovingAverage(windowSize int) *MovingAverage {
+func newMovingAverage(windowSize float64) *MovingAverage {
 	return &MovingAverage{
 		trend:      signal.Flat,
 		windowSize: windowSize,
-		Ticks:      make([]model.Tick, 0, windowSize),
+		Ticks:      make([]float64, 0, int(windowSize)),
 	}
 }
 
@@ -42,15 +42,21 @@ func NewShortMovingAverage() *MovingAverage {
 }
 
 func (ma *MovingAverage) SignalActive() bool {
-	return len(ma.Ticks) == ma.windowSize
+	return len(ma.Ticks) == int(ma.windowSize)
 }
 
 func (ma *MovingAverage) Update(tick model.Tick) {
 
 	// Take the most recent [ma.windowSize] data points if at capacity, normal add otherwise
-	if len(ma.Ticks) == ma.windowSize {
-		ma.Ticks = append(ma.Ticks[1:], tick)
+	if ma.SignalActive() {
+		ma.Ticks = append(ma.Ticks[1:], tick.Price)
 	} else {
-		ma.Ticks = append(ma.Ticks, tick)
+		ma.Ticks = append(ma.Ticks, tick.Price)
 	}
+
+	var runSum = 0.0
+	for _, val := range ma.Ticks {
+		runSum += val
+	}
+	ma.average = runSum / ma.windowSize
 }

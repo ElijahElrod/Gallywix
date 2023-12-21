@@ -12,6 +12,11 @@ type Response struct {
 	ProductID string       `json:"product_id"`
 	BestBid   float64      `json:"best_bid,string"`
 	BestAsk   float64      `json:"best_ask,string"`
+	Price     float64      `json:"price,string"`
+	DailyLow  float64      `json:"low_24h,string"`
+	DailyHigh float64      `json:"high_24h,string"`
+	DailyVol  float64      `json:"volume_24h,string"`
+	Sequence  int64        `json:"sequence"`
 }
 
 type ResponseType int
@@ -33,6 +38,7 @@ func (r ResponseType) String() string {
 
 func (r *ResponseType) UnmarshalJSON(v []byte) error {
 	str := string(v)
+
 	for i, name := range responseTypes {
 		if name == str {
 			*r = ResponseType(i)

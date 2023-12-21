@@ -146,6 +146,10 @@ func (c *client) responseReader(tickChan chan model.Tick) error {
 				Bid:       tickData.BestBid,
 				Ask:       tickData.BestAsk,
 				Symbol:    tickData.ProductID,
+				DailyHigh: tickData.DailyHigh,
+				DailyLow:  tickData.DailyLow,
+				DailyVol:  tickData.DailyVol,
+				Price:     tickData.Price,
 			}
 			mu.Unlock()
 		}

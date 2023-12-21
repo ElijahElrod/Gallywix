@@ -6,4 +6,8 @@ type Tick struct {
 	Bid       float64
 	Ask       float64
 	Symbol    string
+	Price     float64
+	DailyLow  float64
+	DailyHigh float64
+	DailyVol  float64
 }
