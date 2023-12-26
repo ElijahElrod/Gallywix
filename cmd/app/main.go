@@ -11,7 +11,7 @@ import (
 	"github.com/elijahelrod/vespene/internal/app"
 )
 
-// Main runs the application
+// main loads the configuration, and runs the trading application
 func main() {
 	ctx, cancel := signal.NotifyContext(context.TODO(), os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
 	go func() {
