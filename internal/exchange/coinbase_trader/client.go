@@ -1,4 +1,4 @@
-package coinbase
+package coinbase_trader
 
 import (
 	"bytes"
@@ -26,8 +26,16 @@ type ExchangeService struct {
 	httpClient  http.Client
 }
 
-// PlaceOrder takes the productId, side (Buy/Sell), size, and price to place an order to coinbase
-// it generates custom headers off the [config.ExchangeConfig]
+func NewExchangeService(exCfg config.ExchangeConfig, logger logger.Logger) *ExchangeService {
+	return &ExchangeService{
+		exchangeCfg: exCfg,
+		logger:      logger,
+		httpClient:  http.Client{},
+	}
+}
+
+// PlaceOrder takes the productId, side (Buy/Sell), size, and price to place an order to coinbase; also
+// generates custom headers off the [config.ExchangeConfig]
 func (es *ExchangeService) PlaceOrder(productId, side, size, price string) {
 	var accessKey = es.exchangeCfg.AccessKey
 	var accessPassphrase = es.exchangeCfg.AccessPassphrase

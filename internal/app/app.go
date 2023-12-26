@@ -13,7 +13,7 @@ import (
 )
 
 func Run(ctx context.Context, cfg *config.Config) {
-	var err error
+
 	// Setup Logger Provider (Zap)
 	loggerProvider := zap.NewLogger(cfg.Logger.Level, cfg.Logger.DisableCaller, cfg.Logger.DisableStacktrace)
 	loggerProvider.InitLogger()
@@ -25,6 +25,10 @@ func Run(ctx context.Context, cfg *config.Config) {
 	//}
 	//defer func() {
 	//	err = dbProvider.Close()
+	//  if err != nil {
+	// loggerProvider.Fatal(err)
+	// os.Exit(1)
+	// }
 	//}()
 	//loggerProvider.Info("Initialized DB Client")
 
@@ -37,8 +41,10 @@ func Run(ctx context.Context, cfg *config.Config) {
 		err = exchangeProvider.CloseConnection()
 		if err != nil {
 			loggerProvider.Fatal(err)
+			os.Exit(1)
 		}
 	}()
+
 	loggerProvider.Info("Initialized Exchange Client")
 
 	socketProvider, err := websocket.NewClient(exchangeProvider, loggerProvider, cfg.Exchange)
@@ -59,5 +65,5 @@ func Run(ctx context.Context, cfg *config.Config) {
 
 	<-ctx.Done()
 
-	loggerProvider.Info("socket stopping...")
+	loggerProvider.Info("Socket stopping...")
 }

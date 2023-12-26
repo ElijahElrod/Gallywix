@@ -14,5 +14,9 @@ func (pl *ProductLookup) isEmpty() bool {
 }
 
 func (pl *ProductLookup) getStrategies(productId string) []Strategy {
-	return pl.mapping[productId]
+	strategies, ok := pl.mapping[productId]
+	if !ok {
+		return make([]Strategy, 0)
+	}
+	return strategies
 }

@@ -10,7 +10,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/elijahelrod/vespene/internal/algo/signal"
 	"github.com/elijahelrod/vespene/internal/algo/strategy"
+	trader "github.com/elijahelrod/vespene/internal/exchange/coinbase_trader"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/elijahelrod/vespene/config"
@@ -25,6 +27,7 @@ type client struct {
 	conn     exchange.Manager
 	products []string
 	channels []string
+	exCfg    config.ExchangeConfig
 }
 
 func NewClient(conn exchange.Manager, logger logger.Logger, exchangeCfg config.ExchangeConfig) (*client, error) {
@@ -37,12 +40,14 @@ func NewClient(conn exchange.Manager, logger logger.Logger, exchangeCfg config.E
 		conn:     conn,
 		products: exchangeCfg.Symbols,
 		channels: exchangeCfg.Channels,
+		exCfg:    exchangeCfg,
 	}, nil
 }
 
 func (c *client) Run(ctx context.Context, strategy strategy.Strategy) error {
 	var errGroup = errgroup.Group{}
 	var tickMap = make(map[string]chan model.Tick, len(c.products))
+	var exchangeSvc = trader.NewExchangeService(c.exCfg, c.logger)
 
 	for _, symbol := range c.products {
 		tickMap[symbol] = make(chan model.Tick, 1)
@@ -54,7 +59,32 @@ func (c *client) Run(ctx context.Context, strategy strategy.Strategy) error {
 				case tick, ok := <-tickMap[symbol]:
 					if ok {
 						c.logger.Info(fmt.Sprintf("Tick %s -> time:%d, bid:%f, ask:%f", tick.Symbol, tick.Timestamp, tick.Bid, tick.Ask))
+
 						strategy.UpdateSignals(tick)
+						aggSignal := strategy.EvaluateSignals(tick)
+
+						var estTradePrice string
+						switch aggSignal {
+
+						//TODO: Need to figure out trade sizing
+						case signal.SELL:
+							{
+								c.logger.Info(fmt.Sprintf("Placing SELL Order with Details => Symbol: %s, Trade Price: %s", tick.Symbol, estTradePrice))
+								// Need something here to check if we have an open position to sell
+								estTradePrice = fmt.Sprintf("%f", tick.Bid)
+								exchangeSvc.PlaceOrder(tick.Symbol, string(signal.SELL), "2", estTradePrice)
+							}
+						case signal.BUY:
+							{
+								c.logger.Info(fmt.Sprintf("Placing BUY Order with Details => Symbol: %s, Trade Price: %s", tick.Symbol, estTradePrice))
+								estTradePrice = fmt.Sprintf("%f", tick.Ask)
+								exchangeSvc.PlaceOrder(tick.Symbol, string(signal.BUY), "2", estTradePrice)
+							}
+						default:
+							continue
+
+						}
+
 					} else {
 						return nil
 					}
