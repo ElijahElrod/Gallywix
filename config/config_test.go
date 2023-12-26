@@ -11,13 +11,11 @@ func TestNewConfig(t *testing.T) {
 		ctx context.Context
 	}
 
-	tests := []struct {
+	var tests []struct {
 		name    string
 		args    args
 		want    *Config
 		wantErr bool
-	}{
-		{},
 	}
 
 	for _, tt := range tests {
