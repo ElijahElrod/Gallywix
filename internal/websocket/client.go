@@ -102,6 +102,7 @@ func (c *client) Run(ctx context.Context, strategy strategy.Strategy) error {
 								// TODO: Figure out ideal cancel periods & order status checks
 							}
 						default:
+							c.logger.Info("Did not get clear Buy or Sell Signal, waiting...")
 							continue
 
 						}

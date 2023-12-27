@@ -38,15 +38,15 @@ func (d *Donchian) Name() string {
 func (d *Donchian) Update(tick model.Tick) {
 
 	if len(d.highs) == d.highPeriod {
-		d.highs = append(d.highs[1:], tick.DailyHigh)
+		d.highs = append(d.highs[1:], tick.Ask)
 	} else {
-		d.highs = append(d.highs, tick.DailyHigh)
+		d.highs = append(d.highs, tick.Ask)
 	}
 
 	if len(d.lows) == d.lowPeriod {
-		d.lows = append(d.lows[1:], tick.DailyLow)
+		d.lows = append(d.lows[1:], tick.Bid)
 	} else {
-		d.lows = append(d.lows, tick.DailyLow)
+		d.lows = append(d.lows, tick.Bid)
 	}
 
 	d.lower = slices.Min(d.lows)
@@ -58,7 +58,7 @@ func (d *Donchian) Update(tick model.Tick) {
 func (d *Donchian) Evaluate(tick model.Tick) signal.Side {
 
 	if d.SignalActive() {
-		if tick.Price > d.upper {
+		if tick.Price > d.upper*0.95 {
 			return signal.BUY
 		}
 
