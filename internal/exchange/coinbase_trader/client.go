@@ -122,6 +122,7 @@ func (es *ExchangeService) CheckOrderStatus(orderId string) string {
 		es.logger.Error(err)
 		return UnknownOrderStatus // Couldn't make request
 	}
+
 	req.Header.Add("Content-Type", "application/json")
 	res, err := es.httpClient.Do(req)
 	if err != nil {
@@ -129,17 +130,21 @@ func (es *ExchangeService) CheckOrderStatus(orderId string) string {
 		return UnknownOrderStatus
 	}
 	defer res.Body.Close()
+
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		es.logger.Error(err)
 		return UnknownOrderStatus
 	}
+
 	var orderRes model.OrderResponse
 	err = json.Unmarshal(body, &orderRes)
 	if err != nil {
 		es.logger.Error(err)
 		return UnknownOrderStatus
 	}
+
+	es.logger.Info(fmt.Sprintf("Order: %s, has status: %s ", orderId, orderRes.Status))
 	return orderRes.Status
 }
 
