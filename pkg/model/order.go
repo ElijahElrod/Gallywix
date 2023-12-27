@@ -7,3 +7,12 @@ type OrderBody struct {
 	Size      string `json:"size"`
 	Price     string `json:"price"`
 }
+
+type OrderResponse struct {
+	OrderId      string `json:"order_id"`
+	ProductId    string `json:"product_id"`
+	UserId       string `json:"user_id"`
+	Status       string `json:"status"`
+	FillSize     string `json:"filled_size"`
+	AvgFillPrice string `json:"average_filled_price"`
+}

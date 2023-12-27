@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -16,9 +17,10 @@ import (
 	"github.com/elijahelrod/vespene/pkg/model"
 )
 
-const Post = "POST"
 const OrderPath = "/orders"
 const CancelOrderPath = OrderPath + "/batch_cancel"
+
+const UnknownOrderStatus = "UNKNOWN_ORDER_STATUS"
 
 type ExchangeService struct {
 	exchangeCfg config.ExchangeConfig
@@ -75,7 +77,7 @@ func (es *ExchangeService) PlaceOrder(productId, side, size, price string) {
 
 	// Create Reader for sending POST Request to place the order
 	bodyReader := bytes.NewReader(orderBody)
-	req, err := http.NewRequest(Post, es.exchangeCfg.Url+OrderPath, bodyReader)
+	req, err := http.NewRequest(http.MethodPost, es.exchangeCfg.Url+OrderPath, bodyReader)
 
 	if err != nil {
 		es.logger.Error(err)
@@ -83,6 +85,7 @@ func (es *ExchangeService) PlaceOrder(productId, side, size, price string) {
 	}
 
 	// [Required Coinbase Headers]: https://docs.cloud.coinbase.com/exchange/docs/rest-auth
+	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("CB-ACCESS-KEY", accessKey)
 	req.Header.Add("CB-ACCESS-SIGN", signedAccessStr)
 	req.Header.Add("CB-ACCESS-TIMESTAMP", accessKey)
@@ -112,9 +115,37 @@ func (es *ExchangeService) PlaceOrder(productId, side, size, price string) {
 	es.logger.Info("Made request: " + string(body))
 }
 
+func (es *ExchangeService) CheckOrderStatus(orderId string) string {
+	orderStatusUrl := fmt.Sprintf("%s/%s/historical/%s", es.exchangeCfg.Url, OrderPath, orderId)
+	req, err := http.NewRequest(http.MethodGet, orderStatusUrl, nil)
+	if err != nil {
+		es.logger.Error(err)
+		return UnknownOrderStatus // Couldn't make request
+	}
+	req.Header.Add("Content-Type", "application/json")
+	res, err := es.httpClient.Do(req)
+	if err != nil {
+		es.logger.Error(err)
+		return UnknownOrderStatus
+	}
+	defer res.Body.Close()
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		es.logger.Error(err)
+		return UnknownOrderStatus
+	}
+	var orderRes model.OrderResponse
+	err = json.Unmarshal(body, &orderRes)
+	if err != nil {
+		es.logger.Error(err)
+		return UnknownOrderStatus
+	}
+	return orderRes.Status
+}
+
 // CancelOrder sends a POST request to cancel one of more unfilled orders
 // it generates headers off the [config.ExchangeConfig]
-func (es *ExchangeService) CancelOrder() error {
+func (es *ExchangeService) CancelOrder(orderId string) error {
 
 	var timestamp = strconv.Itoa(int(time.Now().UnixNano()))
 
