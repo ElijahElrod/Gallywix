@@ -4,6 +4,7 @@ package mysql
 import (
 	"fmt"
 
+	"github.com/elijahelrod/vespene/pkg/model"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 )
@@ -33,4 +34,24 @@ func (db *client) Ping() error {
 
 func (db *client) Close() error {
 	return db.Close()
+}
+
+func (db *client) QueryByOrderId(orderId string) ([]model.OrderTableRow, error) {
+	dbRows, err := db.Query("SELECT * FROM tbl_orders WHERE orderId = ? LIMIT 1", orderId)
+	if err != nil {
+		return []model.OrderTableRow{}, err
+	}
+	defer dbRows.Close()
+
+	orders := make([]model.OrderTableRow, 1)
+	for dbRows.Next() {
+		var order model.OrderTableRow
+		if err := dbRows.Scan(&order); err != nil {
+			return orders, err
+		}
+		orders = append(orders, order)
+	}
+
+	return orders, nil
+
 }

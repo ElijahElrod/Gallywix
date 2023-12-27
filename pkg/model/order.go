@@ -28,3 +28,13 @@ type OrderCancelResponse struct {
 	FailureReason string `json:"failure_reason"`
 	OrderId       string `json:"order_id"`
 }
+
+type OrderTableRow struct {
+	Timestamp int64
+	OrderId   string
+	ProductId string
+	Side      string
+	Size      string
+	Price     string
+	Status    string
+}
