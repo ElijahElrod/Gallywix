@@ -166,7 +166,7 @@ func (c *client) Run(ctx context.Context, strategy strategy.Strategy) error {
 }
 
 // responseReader write to tickChan from response socket data
-func (c *client) responseReader(tickChan chan model.Tick) error {
+func (c *client) responseReader(tickChan chan<- model.Tick) error {
 
 	var mu sync.Mutex
 	var tickData *coinbase.Response
