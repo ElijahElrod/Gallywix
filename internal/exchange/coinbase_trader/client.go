@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/elijahelrod/vespene/config"
@@ -57,7 +58,7 @@ func (es *ExchangeService) PlaceOrder(productId, side, size, price string) {
 	}
 
 	// Create pre-hashed string
-	var message = timestamp + Post + OrderPath + string(orderBody[:])
+	var message = timestamp + http.MethodPost + OrderPath + string(orderBody[:])
 
 	// Decode the base64 access secret
 	var decodedAccessSecret []byte
@@ -137,36 +138,52 @@ func (es *ExchangeService) CheckOrderStatus(orderId string) string {
 		return UnknownOrderStatus
 	}
 
-	var orderRes model.OrderResponse
+	var orderRes model.OrderStatusResponse
 	err = json.Unmarshal(body, &orderRes)
 	if err != nil {
 		es.logger.Error(err)
 		return UnknownOrderStatus
 	}
 
-	es.logger.Info(fmt.Sprintf("Order: %s, has status: %s ", orderId, orderRes.Status))
+	es.logger.Info(fmt.Sprintf("Order: %s, has status: %s ", orderRes.OrderId, orderRes.Status))
 	return orderRes.Status
 }
 
 // CancelOrder sends a POST request to cancel one of more unfilled orders
 // it generates headers off the [config.ExchangeConfig]
-func (es *ExchangeService) CancelOrder(orderId string) error {
+func (es *ExchangeService) CancelOrder(orderIds string) (bool, error) {
 
-	var timestamp = strconv.Itoa(int(time.Now().UnixNano()))
+	cancelOrderUrl := fmt.Sprintf("%s/%s", es.exchangeCfg.Url, CancelOrderPath)
 
-	orderBody, err := json.Marshal(model.OrderBody{
-		ProductId: "",
-		Side:      "",
-		Size:      "",
-		Price:     "",
-	})
+	ordersToCancel := strings.NewReader(orderIds)
 
+	req, err := http.NewRequest(http.MethodPost, cancelOrderUrl, ordersToCancel)
 	if err != nil {
 		es.logger.Error(err)
-		return err
+		return false, err // Couldn't make request
 	}
 
-	// Create pre-hashed string
-	_ = timestamp + Post + CancelOrderPath + string(orderBody[:])
-	return nil
+	req.Header.Add("Content-Type", "application/json")
+	res, err := es.httpClient.Do(req)
+	if err != nil {
+		es.logger.Error(err)
+		return false, err
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		es.logger.Error(err)
+		return false, err
+	}
+
+	var orderRes model.OrderCancelResponse
+	err = json.Unmarshal(body, &orderRes)
+	if err != nil {
+		es.logger.Error(err)
+		return false, err
+	}
+
+	es.logger.Info(fmt.Sprintf("Cancelled Order: %s ", orderRes.OrderId))
+	return orderRes.Success, nil
 }

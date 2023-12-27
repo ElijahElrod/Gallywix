@@ -8,11 +8,17 @@ type OrderBody struct {
 	Price     string `json:"price"`
 }
 
-type OrderResponse struct {
+type OrderStatusResponse struct {
 	OrderId      string `json:"order_id"`
 	ProductId    string `json:"product_id"`
 	UserId       string `json:"user_id"`
 	Status       string `json:"status"`
 	FillSize     string `json:"filled_size"`
 	AvgFillPrice string `json:"average_filled_price"`
+}
+
+type OrderCancelResponse struct {
+	Success       bool   `json:"success"`
+	FailureReason string `json:"failure_reason"`
+	OrderId       string `json:"order_id"`
 }
