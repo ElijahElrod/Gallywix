@@ -28,11 +28,11 @@ func NewClient(host, username, password, base string) (*client, error) {
 	return &client{db}, err
 }
 
-func (db *client) Ping() error {
+func (db *client) PingDB() error {
 	return db.Ping()
 }
 
-func (db *client) Close() error {
+func (db *client) CloseConnection() error {
 	return db.Close()
 }
 

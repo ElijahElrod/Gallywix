@@ -9,7 +9,7 @@ func NewStrategyProductLookup() *ProductLookup {
 	return &ProductLookup{mapping: make(map[string][]Strategy)}
 }
 
-func (pl *ProductLookup) isEmpty() bool {
+/*func (pl *ProductLookup) isEmpty() bool {
 	return len(pl.mapping) == 0
 }
 
@@ -20,3 +20,4 @@ func (pl *ProductLookup) getStrategies(productId string) []Strategy {
 	}
 	return strategies
 }
+*/

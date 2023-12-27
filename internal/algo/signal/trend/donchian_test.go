@@ -5,14 +5,11 @@ import (
 	"testing"
 
 	"github.com/elijahelrod/vespene/internal/algo/signal"
-	"github.com/elijahelrod/vespene/pkg/model"
 )
 
 func TestNewDonchian(t *testing.T) {
 
-	type args struct {
-		tick model.Tick
-	}
+	type args struct{}
 
 	tests := []struct {
 		name    string

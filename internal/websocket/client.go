@@ -50,13 +50,14 @@ func (c *client) Run(ctx context.Context, strategy strategy.Strategy) error {
 	var exchangeSvc = trader.NewExchangeService(c.exCfg, c.logger)
 
 	for _, symbol := range c.products {
-		tickMap[symbol] = make(chan model.Tick, 1)
+		currSymbol := symbol
+		tickMap[currSymbol] = make(chan model.Tick, 1)
 		errGroup.Go(func() error {
 			for {
 				select {
 				case <-ctx.Done():
 					return nil
-				case tick, ok := <-tickMap[symbol]:
+				case tick, ok := <-tickMap[currSymbol]:
 					if ok {
 						c.logger.Info(fmt.Sprintf("Tick %s -> time:%d, bid:%f, ask:%f", tick.Symbol, tick.Timestamp, tick.Bid, tick.Ask))
 
@@ -151,8 +152,9 @@ func (c *client) Run(ctx context.Context, strategy strategy.Strategy) error {
 
 	// writers
 	for _, symbol := range c.products {
+		currSymbol := symbol
 		errGroup.Go(func() error {
-			return c.responseReader(tickMap[symbol])
+			return c.responseReader(tickMap[currSymbol])
 		})
 	}
 

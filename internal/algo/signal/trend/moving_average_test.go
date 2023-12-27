@@ -10,9 +10,7 @@ import (
 
 func TestNewLongMovingAverage(t *testing.T) {
 
-	type args struct {
-		windowSize float64
-	}
+	type args struct{}
 
 	tests := []struct {
 		name    string
@@ -41,7 +39,6 @@ func TestNewLongMovingAverage(t *testing.T) {
 
 func TestNewMediumMovingAverage(t *testing.T) {
 	type args struct {
-		windowSize float64
 	}
 
 	tests := []struct {
@@ -69,9 +66,7 @@ func TestNewMediumMovingAverage(t *testing.T) {
 }
 
 func TestNewShortMovingAverage(t *testing.T) {
-	type args struct {
-		windowSize float64
-	}
+	type args struct{}
 
 	tests := []struct {
 		name    string

@@ -22,6 +22,9 @@ release.revert: ## Revert git release tag
 	git tag -d v${tag}
 	git push --delete origin v${tag}
 
+lint:
+	golangci-lint run
+
 # logger config
 export LOGGER_CALLER=false
 export LOGGER_STACKTRACE=true
