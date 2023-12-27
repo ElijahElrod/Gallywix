@@ -146,6 +146,7 @@ func (es *ExchangeService) CheckOrderStatus(orderId string) string {
 	}
 
 	es.logger.Info(fmt.Sprintf("Order: %s, has status: %s ", orderRes.OrderId, orderRes.Status))
+	// TODO: Add DB Update for status
 	return orderRes.Status
 }
 
@@ -184,6 +185,7 @@ func (es *ExchangeService) CancelOrder(orderIds string) (bool, error) {
 		return false, err
 	}
 
-	es.logger.Info(fmt.Sprintf("Cancelled Order: %s ", orderRes.OrderId))
+	// TODO: Add DB Write here for updating status if successful
+	es.logger.Info(fmt.Sprintf("Order %s  cancelled: %t ", orderRes.OrderId, orderRes.Success))
 	return orderRes.Success, nil
 }
