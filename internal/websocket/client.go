@@ -66,19 +66,40 @@ func (c *client) Run(ctx context.Context, strategy strategy.Strategy) error {
 						var estTradePrice string
 						switch aggSignal {
 
-						//TODO: Need to figure out trade sizing
+						//TODO: Need to figure out trade sizing + position management
 						case signal.SELL:
 							{
 								c.logger.Info(fmt.Sprintf("Placing SELL Order with Details => Symbol: %s, Trade Price: %s", tick.Symbol, estTradePrice))
 								// Need something here to check if we have an open position to sell
 								estTradePrice = fmt.Sprintf("%f", tick.Bid)
-								exchangeSvc.PlaceOrder(tick.Symbol, string(signal.SELL), "2", estTradePrice)
+								success, orderId, err := exchangeSvc.PlaceOrder(tick.Symbol, string(signal.SELL), "2", estTradePrice)
+								if err != nil {
+									c.logger.Error(err)
+								}
+
+								if !success {
+									c.logger.Info("Failed to place sell order")
+								} else {
+									c.logger.Info(fmt.Sprintf("Successfully placed sell order: %s", orderId))
+								}
+
 							}
 						case signal.BUY:
 							{
 								c.logger.Info(fmt.Sprintf("Placing BUY Order with Details => Symbol: %s, Trade Price: %s", tick.Symbol, estTradePrice))
-								estTradePrice = fmt.Sprintf("%f", tick.Ask)
-								exchangeSvc.PlaceOrder(tick.Symbol, string(signal.BUY), "2", estTradePrice)
+								estTradePrice = fmt.Sprintf("%f", tick.Ask*0.95) // 5% Margin from Ask
+								success, orderId, err := exchangeSvc.PlaceOrder(tick.Symbol, string(signal.BUY), "2", estTradePrice)
+								if err != nil {
+									c.logger.Error(err)
+								}
+
+								if !success {
+									c.logger.Info("Failed to place buy order")
+								} else {
+									c.logger.Info(fmt.Sprintf("Successfully placed buy order: %s", orderId))
+								}
+
+								// TODO: Figure out ideal cancel periods & order status checks
 							}
 						default:
 							continue
