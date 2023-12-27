@@ -39,7 +39,7 @@ func NewExchangeService(exCfg config.ExchangeConfig, logger logger.Logger) *Exch
 
 // PlaceOrder takes the productId, side (Buy/Sell), size, and price to place an order to coinbase; also
 // generates custom headers off the [config.ExchangeConfig]
-func (es *ExchangeService) PlaceOrder(productId, side, size, price string) {
+func (es *ExchangeService) PlaceOrder(productId, side, size, price string) (bool, string, error) {
 	var accessKey = es.exchangeCfg.AccessKey
 	var accessPassphrase = es.exchangeCfg.AccessPassphrase
 	var accessSecret = es.exchangeCfg.AccessSecret
@@ -54,7 +54,7 @@ func (es *ExchangeService) PlaceOrder(productId, side, size, price string) {
 
 	if err != nil {
 		es.logger.Error(err)
-		return
+		return false, "0", err
 	}
 
 	// Create pre-hashed string
@@ -65,7 +65,7 @@ func (es *ExchangeService) PlaceOrder(productId, side, size, price string) {
 	_, err = base64.StdEncoding.Decode(decodedAccessSecret, []byte(accessSecret))
 	if err != nil {
 		es.logger.Error(err)
-		return
+		return false, "0", err
 	}
 
 	// Create a SHA256 Hmac with the decodedAccessSecret
@@ -82,7 +82,7 @@ func (es *ExchangeService) PlaceOrder(productId, side, size, price string) {
 
 	if err != nil {
 		es.logger.Error(err)
-		return
+		return false, "0", err
 	}
 
 	// [Required Coinbase Headers]: https://docs.cloud.coinbase.com/exchange/docs/rest-auth
@@ -96,7 +96,7 @@ func (es *ExchangeService) PlaceOrder(productId, side, size, price string) {
 	res, err := es.httpClient.Do(req)
 	if err != nil {
 		es.logger.Error(err)
-		return
+		return false, "0", err
 	}
 
 	defer func(Body io.ReadCloser) {
@@ -109,11 +109,19 @@ func (es *ExchangeService) PlaceOrder(productId, side, size, price string) {
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		es.logger.Error(err)
-		return
+		return false, "0", err
 	}
 
-	// TODO: Add DB Write here or something for order tracking and cancelling later
-	es.logger.Info("Made request: " + string(body))
+	var orderRes model.OrderPlaceResponse
+	err = json.Unmarshal(body, &orderRes)
+	if err != nil {
+		es.logger.Error(err)
+		return false, "0", err
+	}
+
+	// TODO: Add DB Write here or something for tracking/cancelling and resuming in case of failure
+	es.logger.Info(fmt.Sprintf("Placed Order %s :: Success %t", orderRes.OrderId, orderRes.Success))
+	return orderRes.Success, orderRes.OrderId, nil
 }
 
 func (es *ExchangeService) CheckOrderStatus(orderId string) string {
