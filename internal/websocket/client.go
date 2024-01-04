@@ -154,7 +154,14 @@ func (c *client) Run(ctx context.Context, strategy strategy.Strategy) error {
 	for _, symbol := range c.products {
 		currSymbol := symbol
 		errGroup.Go(func() error {
-			return c.responseReader(tickMap[currSymbol])
+			for {
+				select {
+				case <-ctx.Done():
+					return nil
+				default:
+					return c.responseReader(tickMap[currSymbol])
+				}
+			}
 		})
 	}
 

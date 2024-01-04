@@ -1,10 +1,8 @@
-package trend
+package signal
 
 import (
 	"reflect"
 	"testing"
-
-	"github.com/elijahelrod/vespene/internal/algo/signal"
 )
 
 func TestNewDonchian(t *testing.T) {
@@ -25,7 +23,7 @@ func TestNewDonchian(t *testing.T) {
 				mid:        0,
 				lowPeriod:  40,
 				highPeriod: 50,
-				channel:    signal.DonchianChannel,
+				channel:    DonchianChannel,
 				lows:       make([]float64, 0, 40),
 				highs:      make([]float64, 0, 50)},
 			wantErr: false,

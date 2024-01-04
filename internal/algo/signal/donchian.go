@@ -1,10 +1,9 @@
-package trend
+package signal
 
 import (
 	"fmt"
 	"slices"
 
-	"github.com/elijahelrod/vespene/internal/algo/signal"
 	"github.com/elijahelrod/vespene/pkg/model"
 )
 
@@ -14,14 +13,16 @@ type Donchian struct {
 	lower      float64
 	lowPeriod  int
 	highPeriod int
-	channel    signal.Type
+	channel    Type
 	highs      []float64
 	lows       []float64
 }
 
+var _ Signal = (*Donchian)(nil)
+
 func NewDonchian(highPeriod, lowPeriod int) *Donchian {
 	return &Donchian{
-		channel: signal.DonchianChannel,
+		channel: DonchianChannel,
 
 		highPeriod: highPeriod,
 		highs:      make([]float64, 0, highPeriod),
@@ -55,22 +56,22 @@ func (d *Donchian) Update(tick model.Tick) {
 
 }
 
-func (d *Donchian) Evaluate(tick model.Tick) signal.Side {
+func (d *Donchian) Evaluate(tick model.Tick) Side {
 
 	if d.SignalActive() {
 		if tick.Price > d.upper*0.95 {
-			return signal.BUY
+			return BUY
 		}
 
 		if tick.Price < d.lower {
-			return signal.SELL
+			return SELL
 		}
 	}
 
-	return signal.NONE
+	return NONE
 }
 
-func (d *Donchian) UpdateAndEvaluate(tick model.Tick) signal.Side {
+func (d *Donchian) UpdateAndEvaluate(tick model.Tick) Side {
 	d.Update(tick)
 	return d.Evaluate(tick)
 }

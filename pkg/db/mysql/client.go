@@ -2,8 +2,10 @@
 package mysql
 
 import (
+	"database/sql"
 	"fmt"
 
+	"github.com/elijahelrod/vespene/pkg/logger"
 	"github.com/elijahelrod/vespene/pkg/model"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
@@ -11,11 +13,12 @@ import (
 
 type client struct {
 	*sqlx.DB
+	logger logger.Logger
 }
 
 // NewClient creates a new MySQL Client for interacting with the databased configured by
 // [config.DatabaseConfig]
-func NewClient(host, username, password, base string) (*client, error) {
+func NewClient(host, username, password, base string, logger logger.Logger) (*client, error) {
 	db, err := sqlx.Connect("mysql", fmt.Sprintf("%s:%s@(%s)/%s", username, password, host, base))
 	if err != nil {
 		return nil, err
@@ -25,7 +28,7 @@ func NewClient(host, username, password, base string) (*client, error) {
 		return nil, err
 	}
 
-	return &client{db}, err
+	return &client{db, logger}, err
 }
 
 func (db *client) PingDB() error {
@@ -41,13 +44,18 @@ func (db *client) QueryByOrderId(orderId string) ([]model.OrderTableRow, error) 
 	if err != nil {
 		return []model.OrderTableRow{}, err
 	}
-	defer dbRows.Close()
+	defer func(dbRows *sql.Rows) {
+		err := dbRows.Close()
+		if err != nil {
+			db.logger.Error(err)
+		}
+	}(dbRows)
 
 	orders := make([]model.OrderTableRow, 1)
 	for dbRows.Next() {
 		var order model.OrderTableRow
 		if err := dbRows.Scan(&order); err != nil {
-			return orders, err
+			return nil, err
 		}
 		orders = append(orders, order)
 	}

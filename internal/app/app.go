@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/elijahelrod/vespene/config"
-	"github.com/elijahelrod/vespene/internal/algo/signal/trend"
+	"github.com/elijahelrod/vespene/internal/algo/signal"
 	"github.com/elijahelrod/vespene/internal/algo/strategy"
 	"github.com/elijahelrod/vespene/internal/websocket"
 	"github.com/elijahelrod/vespene/pkg/exchange/coinbase"
@@ -19,7 +19,7 @@ func Run(ctx context.Context, cfg *config.Config) {
 	loggerProvider.InitLogger()
 
 	// Setup DB Client/Provider (MySQL)
-	//dbProvider, err := mysql.NewClient(cfg.Database.Host, cfg.Database.User, cfg.Database.Password, cfg.Database.Base)
+	//dbProvider, err := mysql.NewClient(cfg.Database.Host, cfg.Database.User, cfg.Database.Password, cfg.Database.Base, loggerProvider)
 	//if err != nil {
 	//	loggerProvider.Fatal(err)
 	//}
@@ -53,7 +53,7 @@ func Run(ctx context.Context, cfg *config.Config) {
 	}
 	loggerProvider.Info("Initialized Socket Connection To Exchange: ", cfg.Exchange.Wss)
 
-	testStrategy := strategy.NewStrategy("Test", loggerProvider, trend.NewDonchian(5, 4))
+	testStrategy := strategy.NewStrategy("Test", loggerProvider, signal.NewDonchian(5, 4))
 
 	go func() {
 		loggerProvider.Info("Socket starting...")

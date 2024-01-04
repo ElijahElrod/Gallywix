@@ -1,21 +1,19 @@
-package channel
+package signal
 
 import (
-	"github.com/elijahelrod/vespene/internal/algo/signal"
-	"github.com/elijahelrod/vespene/internal/algo/signal/trend"
 	"github.com/elijahelrod/vespene/pkg/model"
 )
 
 type Bollinger struct {
 	upper   float64
 	lower   float64
-	sma     trend.MovingAverage
-	channel signal.Type
+	sma     MovingAverage
+	channel Type
 }
 
 func NewBollinger() *Bollinger {
 	return &Bollinger{
-		channel: signal.BollingerChannel,
+		channel: BollingerChannel,
 	}
 }
 

@@ -1,10 +1,9 @@
-package trend
+package signal
 
 import (
 	"reflect"
 	"testing"
 
-	"github.com/elijahelrod/vespene/internal/algo/signal"
 	"github.com/elijahelrod/vespene/pkg/model"
 )
 
@@ -21,7 +20,7 @@ func TestNewLongMovingAverage(t *testing.T) {
 		{
 			name:    "Base Case",
 			args:    args{},
-			want:    &MovingAverage{Trend: signal.Flat, WindowSize: Long, Ticks: make([]float64, 0, int(Long))},
+			want:    &MovingAverage{Trend: Flat, WindowSize: Long, Ticks: make([]float64, 0, Long)},
 			wantErr: false,
 		},
 	}
@@ -50,7 +49,7 @@ func TestNewMediumMovingAverage(t *testing.T) {
 		{
 			name:    "Base Case",
 			args:    args{},
-			want:    &MovingAverage{Trend: signal.Flat, WindowSize: Medium, Ticks: make([]float64, 0, int(Medium))},
+			want:    &MovingAverage{Trend: Flat, WindowSize: Medium, Ticks: make([]float64, 0, Medium)},
 			wantErr: false,
 		},
 	}
@@ -77,7 +76,7 @@ func TestNewShortMovingAverage(t *testing.T) {
 		{
 			name:    "Base Case",
 			args:    args{},
-			want:    &MovingAverage{Trend: signal.Flat, WindowSize: Short, Ticks: make([]float64, 0, int(Short))},
+			want:    &MovingAverage{Trend: Flat, WindowSize: Short, Ticks: make([]float64, 0, Short)},
 			wantErr: false,
 		},
 	}
@@ -94,7 +93,7 @@ func TestNewShortMovingAverage(t *testing.T) {
 
 func TestMovingAverage_SignalActive(t *testing.T) {
 	type args struct {
-		windowSize float64
+		windowSize int
 		ticks      []model.Tick
 	}
 
