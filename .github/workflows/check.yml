@@ -33,10 +33,13 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
-      - name: Install Golangci
-        run: go install github.com/golangci/golangci-lint@latest
-      - name: Run Linter
-        run: golangci-lint run
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          # Require: The version of golangci-lint to use.
+          # When `install-mode` is `binary` (default) the value can be v1.2 or v1.2.3 or `latest` to use the latest version.
+          # When `install-mode` is `goinstall` the value can be v1.2.3, `latest`, or the hash of a commit.
+          version: v1.54
   test:
     runs-on: ubuntu-latest
     name: tests
