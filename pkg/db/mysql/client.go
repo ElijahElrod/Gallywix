@@ -16,8 +16,7 @@ type client struct {
 	logger logger.Logger
 }
 
-// NewClient creates a new MySQL Client for interacting with the databased configured by
-// [config.DatabaseConfig]
+// NewClient creates a new MySQL Client for interacting with the databased configured by [config.DatabaseConfig]
 func NewClient(host, username, password, base string, logger logger.Logger) (*client, error) {
 	db, err := sqlx.Connect("mysql", fmt.Sprintf("%s:%s@(%s)/%s", username, password, host, base))
 	if err != nil {
