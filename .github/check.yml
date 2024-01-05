@@ -1,0 +1,56 @@
+permissions:
+  contents: read
+  pull-requests: read
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id}}
+  cancel-in-progress: true
+name: check
+jobs:
+  fmt:
+    runs-on: ubuntu-latest
+    name: fmt
+    steps:
+      - name: Checkout 
+        uses: actions/checkout@v4
+      - name: Setup Go ${{matrix.go-version}}
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Format
+        run: gofmt -l .
+  lint:
+    runs-on: ubuntu-latest
+    name: lint
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Go ${{matrix.go-version}}
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Install Golangci
+        run: go install github.com/golangci/golanci-lint@latest
+      - name: Run Linter
+        run: golangci-lint run
+  test:
+    runs-on: ubuntu-latest
+    name: tests
+    steps:
+     - name: Checkout 
+        uses: actions/checkout@v4
+      - name: Setup Go ${{matrix.go-version}}
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Install dependencies
+        run: go get .
+      - name: Build
+        run: go build -v ./...
+      - name: Test 
+        run: go test -race
+      
