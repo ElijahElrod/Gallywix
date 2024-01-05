@@ -2,10 +2,8 @@ permissions:
   contents: read
   pull-requests: read
 
-on:
-  push:
-    branches: [main]
-  pull_request:
+on: [pull_request]
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id}}
   cancel-in-progress: true
